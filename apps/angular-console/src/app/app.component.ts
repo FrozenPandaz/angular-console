@@ -10,12 +10,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
-  ViewChild
+  ViewChild,
+  Inject,
+  PLATFORM_ID
 } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { Settings } from '@angular-console/utils';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +36,7 @@ export class AppComponent implements OnInit {
   @ViewChild(RouterOutlet) routerOutlet: RouterOutlet;
   routerTransition: Observable<string>;
   settingsLoaded: boolean;
+  isBrowser: boolean;
 
   ngOnInit() {
     this.routerTransition = this.routerOutlet.activateEvents.pipe(
@@ -43,12 +47,19 @@ export class AppComponent implements OnInit {
   constructor(
     router: Router,
     public settings: Settings,
+    @Inject(PLATFORM_ID) private readonly platformId: string,
     contextualActionBarService: ContextualActionBarService
   ) {
-    settings.fetch().subscribe(() => {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      settings.fetch().subscribe(() => {
+        this.settingsLoaded = true;
+        router.initialNavigation();
+      });
+    } else {
       this.settingsLoaded = true;
       router.initialNavigation();
-    });
+    }
 
     router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -56,6 +67,10 @@ export class AppComponent implements OnInit {
         const navigationEnd = event as NavigationEnd;
         if (navigationEnd.url.startsWith('/workspace/')) {
           contextualActionBarService.contextualTabs$.next(null);
+        } else if (navigationEnd.url === '/_app-shell') {
+          contextualActionBarService.breadcrumbs$.next([
+            { title: 'Loading', loading: true }
+          ]);
         } else {
           switch (
             this.routerOutlet.activatedRouteData

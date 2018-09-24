@@ -1,5 +1,5 @@
 import { HttpClientModule } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { NgModule, InjectionToken, Optional } from '@angular/core';
 import {
   MatIconModule,
   MatIconRegistry,
@@ -19,16 +19,23 @@ import {
   Messenger
 } from '@angular-console/utils';
 import { APOLLO_OPTIONS, ApolloModule } from 'apollo-angular';
-import { HttpLink, HttpLinkModule } from 'apollo-angular-link-http';
+import { HttpLink, HttpLinkModule, Options as ApolloLinkOptions } from 'apollo-angular-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { onError } from 'apollo-link-error';
 
 import { AppComponent } from './app.component';
+import {
+  appShellRoutes,
+  FeatureAppShellModule
+} from '@angular-console/feature-app-shell';
+
+export const BACKEND_PORT = new InjectionToken<number>('BACKEND_PORT');
 
 export function initApollo(
   analytics: AnalyticsCollector,
   messenger: Messenger,
-  httpLink: HttpLink
+  httpLink: HttpLink,
+  port?: number
 ) {
   analytics.setUpRouterLogging();
 
@@ -51,12 +58,17 @@ export function initApollo(
     }
   });
 
+  const linkOptions: ApolloLinkOptions = {};
+  if (port) {
+    linkOptions.uri = `http://localhost:${port}/graphql`;
+  }
+
   return {
     defaultOptions: {
       query: { fetchPolicy: 'network-only' },
       watchQuery: { fetchPolicy: 'network-only' }
     },
-    link: errorLink.concat(httpLink.create({})),
+    link: errorLink.concat(httpLink.create(linkOptions)),
     cache: new InMemoryCache()
   };
 }
@@ -66,16 +78,18 @@ export function initApollo(
   imports: [
     MatIconModule,
     MatSnackBarModule,
-    BrowserModule,
+    BrowserModule.withServerTransition({ appId: 'serverApp' }),
     BrowserAnimationsModule,
     ApolloModule,
     HttpLinkModule,
     HttpClientModule,
+    FeatureAppShellModule,
     FeatureWorkspacesModule,
     UiModule,
     RouterModule.forRoot(
       [
         { path: '', pathMatch: 'full', redirectTo: '/workspaces' },
+        ...appShellRoutes,
         {
           path: '',
           children: workspaceRoutes,
@@ -91,7 +105,7 @@ export function initApollo(
     {
       provide: APOLLO_OPTIONS,
       useFactory: initApollo,
-      deps: [AnalyticsCollector, Messenger, HttpLink]
+      deps: [AnalyticsCollector, Messenger, HttpLink, [new Optional(), BACKEND_PORT]]
     }
   ],
   bootstrap: [AppComponent]
