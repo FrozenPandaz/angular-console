@@ -103,17 +103,20 @@ function createWindow() {
       icon: path.join(__dirname, '/assets/icons/build/icon.png')
     });
   }
-
+  console.time('Splash Screen');
+  win.loadURL(`file://${path.join(__dirname, 'public/splash-screen.html')}`);
   getPort({ port: 7777 }).then((port: number) => {
     try {
       startServer(port);
       if (fileExists(path.join(currentDirectory, 'angular.json'))) {
+        console.timeEnd('Splash Screen');
         win.loadURL(
           `http://localhost:${port}/workspace/${encodeURIComponent(
             currentDirectory
           )}/projects`
         );
       } else {
+        console.timeEnd('Splash Screen');
         win.loadURL(`http://localhost:${port}`);
       }
     } catch (e) {

@@ -2,11 +2,14 @@
   <mat-toolbar-row>
     <div fxFlex @fadeIn *ngIf="(contextualActionBarService.contextualActions$ | async) === null" fxLayout="row" fxLayoutAlign="start center">
       <a class="branding" fxLayout="row" fxLayoutAlign="start center" routerLink="/workspaces">
-        <img alt="Home" height="48" width="48" src="/assets/angular_logo.svg" title="Home">
+        <img alt="Home" height="48" width="48" src="./assets/angular_logo.svg" title="Home">
       </a>
       <div class="title" fxFlex fxLayout="row" fxLayoutGap="16px">
         <ng-container *ngFor="let breadcrumb of (contextualActionBarService.breadcrumbs$ | async); let last = last;">
-          <span>{{ breadcrumb.title }}</span>
+          <ui-content-loader *ngIf="breadcrumb.loading" [width]="200" [height]="20" [preserveAspectRatio]="null" primaryColor="#1976d2">
+            <svg:rect x="0" y="0" rx="3" ry="3" width="200" height="20" /> 
+          </ui-content-loader>
+          <span *ngIf="!breadcrumb.loading">{{ breadcrumb.title }}</span>
           <span *ngIf="!last">|</span>
         </ng-container>
       </div>

@@ -5,5 +5,5 @@
     <router-outlet></router-outlet>
   </div>
 
-  <ui-data-collection *ngIf="settingsLoaded"></ui-data-collection>
+  <ui-data-collection *ngIf="isBrowser && settingsLoaded"></ui-data-collection>
 </div>

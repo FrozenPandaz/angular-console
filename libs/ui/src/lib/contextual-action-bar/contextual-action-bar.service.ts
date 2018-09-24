@@ -3,6 +3,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 export interface Breadcrumb {
   title: string;
+  loading?: boolean;
 }
 
 export interface MenuOption {

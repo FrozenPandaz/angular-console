@@ -26,6 +26,7 @@ module.exports = {
     frontend: {
       ng: 'ng',
       build: 'ng build angular-console --prod',
+      prerender: 'ng run angular-console:server && node ./tools/scripts/prerender.js',
       serve: {
         default: 'ng serve angular-console',
         prod: 'ng serve angular-console --prod'
@@ -96,7 +97,7 @@ module.exports = {
     },
     dev: {
       'compile-server': npsUtils.series.nps(withPlatform('compile'), withPlatform('copy-assets')),
-      'prepare': npsUtils.series.nps(withPlatform('clean'), 'dev.compile-server', 'frontend.build', withPlatform('copy-frontend'), withPlatform('pack')),
+      'prepare': npsUtils.series.nps(withPlatform('clean'), 'dev.compile-server', 'frontend.build', 'frontend.prerender', withPlatform('copy-frontend'), withPlatform('pack')),
       'server': npsUtils.series.nps('dev.compile-server', withPlatform('start-server')),
       'up': npsUtils.concurrent.nps('dev.server', 'frontend.serve'),
       'dist': npsUtils.series.nps('dev.prepare', withPlatform('builder-dist'), withPlatform('copy-to-osbuilds'))

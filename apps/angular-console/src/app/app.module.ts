@@ -24,6 +24,10 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { onError } from 'apollo-link-error';
 
 import { AppComponent } from './app.component';
+import {
+  appShellRoutes,
+  FeatureAppShellModule
+} from '@angular-console/feature-app-shell';
 
 export function initApollo(
   analytics: AnalyticsCollector,
@@ -66,16 +70,18 @@ export function initApollo(
   imports: [
     MatIconModule,
     MatSnackBarModule,
-    BrowserModule,
+    BrowserModule.withServerTransition({ appId: 'serverApp' }),
     BrowserAnimationsModule,
     ApolloModule,
     HttpLinkModule,
     HttpClientModule,
+    FeatureAppShellModule,
     FeatureWorkspacesModule,
     UiModule,
     RouterModule.forRoot(
       [
         { path: '', pathMatch: 'full', redirectTo: '/workspaces' },
+        ...appShellRoutes,
         {
           path: '',
           children: workspaceRoutes,
